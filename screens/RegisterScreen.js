@@ -5,23 +5,35 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { auth, db } from "../firebase";
+import { auth, db } from "../firebase"; // ✅ use your "firebase.js"
 
 export default function RegisterScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student"); // default role
+  const [role, setRole] = useState("student");
+
+  // extra fields for club head
+  const [name, setName] = useState("");
+  const [post, setPost] = useState("");
+  const [clubDescription, setClubDescription] = useState("");
+
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
     if (!email.trim() || !password) {
-      alert("Please fill in all fields.");
+      alert("Please enter email and password.");
+      return;
+    }
+
+    if (role === "clubhead" && (!name.trim() || !post.trim() || !clubDescription.trim())) {
+      alert("Please fill in all club head details.");
       return;
     }
 
@@ -30,10 +42,16 @@ export default function RegisterScreen({ navigation }) {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
       const uid = userCred.user.uid;
 
-      // Save role in Firestore
+      // save user profile in Firestore
       await setDoc(doc(db, "users", uid), {
-        email,
+        email: email.trim().toLowerCase(),
         role,
+        ...(role === "clubhead" && {
+          name,
+          post,
+          clubDescription,
+        }),
+        createdAt: new Date().toISOString(),
       });
 
       navigation.replace("Dashboard", { role });
@@ -45,23 +63,22 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* IIIT NR Logo at Top */}
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* IIIT NR Logo */}
       <Image
         source={require("../assets/images/iiitnr_logo.png")}
         style={styles.topLogo}
         resizeMode="contain"
       />
 
-      {/* Intro */}
       <Text style={styles.intro}>
-        Register to <Text style={{ fontWeight: "700" }}>Club Updates</Text> and
-        get connected with{"\n"}all{" "}
+        Register to <Text style={{ fontWeight: "700" }}>Club Updates</Text> and get
+        connected with{"\n"}all{" "}
         <Text style={{ fontWeight: "700" }}>events, news, and club activities</Text>{" "}
         at IIIT Naya Raipur.
       </Text>
 
-      {/* Inputs */}
+      {/* Email + Password */}
       <TextInput
         placeholder="Email"
         value={email}
@@ -70,7 +87,6 @@ export default function RegisterScreen({ navigation }) {
         autoCapitalize="none"
         style={styles.input}
       />
-
       <TextInput
         placeholder="Password"
         value={password}
@@ -96,24 +112,45 @@ export default function RegisterScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" style={{ marginTop: 12 }} />
-      ) : (
+      {/* Extra fields for club head */}
+      {role === "clubhead" && (
         <>
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>Register</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.link}
-            onPress={() => navigation.navigate("Login")}
-          >
-            <Text style={{ color: "#444" }}>Already have an account? Login</Text>
-          </TouchableOpacity>
+          <TextInput
+            placeholder="Full Name"
+            value={name}
+            onChangeText={setName}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Head Position (e.g. President)"
+            value={post}
+            onChangeText={setPost}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Club Description"
+            value={clubDescription}
+            onChangeText={setClubDescription}
+            style={[styles.input, { height: 80 }]}
+            multiline
+          />
         </>
       )}
 
-      {/* Footer with App Logo + Watermark */}
+      {loading ? (
+        <ActivityIndicator size="large" style={{ marginTop: 12 }} />
+      ) : (
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          <Text style={styles.buttonText}>Register</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Already have account? */}
+      <TouchableOpacity style={styles.link} onPress={() => navigation.navigate("Login")}>
+        <Text style={{ color: "#444" }}>Already have an account? Login</Text>
+      </TouchableOpacity>
+
+      {/* Footer */}
       <View style={styles.footer}>
         <Image
           source={require("../assets/images/logo.png")}
@@ -122,13 +159,13 @@ export default function RegisterScreen({ navigation }) {
         />
         <Text style={styles.watermark}>IIIT NAYA RAIPUR</Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
     backgroundColor: "#FFF6FB",
     justifyContent: "center",

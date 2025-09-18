@@ -1,10 +1,10 @@
-import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import CreateUpdate from "./screens/CreateUpdate";
+import Dashboard from "./screens/Dashboard";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
-import Dashboard from "./screens/Dashboard";
-import CreateUpdate from "./screens/CreateUpdate";
+import UpdateDetails from "./screens/UpdateDetails";
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +16,7 @@ export default function App() {
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Dashboard" component={Dashboard} />
         <Stack.Screen name="CreateUpdate" component={CreateUpdate} />
+        <Stack.Screen name="UpdateDetails" component={UpdateDetails} />
       </Stack.Navigator>
     </NavigationContainer>
   );
