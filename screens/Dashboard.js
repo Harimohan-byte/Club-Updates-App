@@ -3,6 +3,8 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { auth, db } from "../firebase";
+import AIClubHead from "../components/AIClubHead";
+
 
 export default function DashboardScreen({ route, navigation }) {
   const { role } = route.params;
@@ -27,6 +29,12 @@ export default function DashboardScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+
+
+    {role === "clubhead" && (
+  <AIClubHead updates={updates} />
+)}
+
       {/* IIIT NR Logo */}
       <Image
         source={require("../assets/images/iiitnr_logo.png")}
