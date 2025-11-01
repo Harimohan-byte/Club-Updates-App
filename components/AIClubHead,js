@@ -1,0 +1,56 @@
+// components/AIClubHead.js
+import { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import axios from "axios";
+
+export default function AIClubHead({ updates }) {
+  const [suggestion, setSuggestion] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const fetchAISuggestion = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post("https://api.openai.com/v1/chat/completions", {
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: "You are an AI club head assistant for college clubs." },
+          { role: "user", content: `Suggest one new event idea based on these recent updates: ${updates.map(u => u.title).join(", ")}` },
+        ],
+      }, {
+        headers: {
+          Authorization: `Bearer YOUR_OPENAI_API_KEY`,
+          "Content-Type": "application/json",
+        },
+      });
+      setSuggestion(response.data.choices[0].message.content);
+    } catch (err) {
+      setSuggestion("Failed to fetch AI suggestion.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.aiCard}>
+      <Text style={styles.aiTitle}>🤖 AI Club Head</Text>
+      {loading ? (
+        <ActivityIndicator size="small" color="#4DB0FF" />
+      ) : (
+        <>
+          <Text style={styles.aiText}>{suggestion || "Get event ideas and reminders from AI!"}</Text>
+          <TouchableOpacity style={styles.aiButton} onPress={fetchAISuggestion}>
+            <Text style={styles.aiButtonText}>Get Suggestion</Text>
+          </TouchableOpacity>
+        </>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  aiCard: { backgroundColor: "#E8F5FF", padding: 14, borderRadius: 12, marginBottom: 12 },
+  aiTitle: { fontWeight: "700", fontSize: 16, color: "#007AFF", marginBottom: 6 },
+  aiText: { color: "#333", marginBottom: 10 },
+  aiButton: { backgroundColor: "#4DB0FF", padding: 10, borderRadius: 10, alignItems: "center" },
+  aiButtonText: { color: "#fff", fontWeight: "600" },
+});
